@@ -1,0 +1,23 @@
+{
+  "name": "@elizaos/client-solana-trading",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@elizaos/core": "workspace:*",
+    "@elizaos/client-discord": "workspace:*",
+    "@elizaos/plugin-solana-trading": "workspace:*",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.2.2"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "start": "node dist/index.js",
+    "lint": "eslint --fix --cache ."
+  }
+}
