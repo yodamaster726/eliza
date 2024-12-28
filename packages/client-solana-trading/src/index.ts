@@ -1,10 +1,13 @@
-import { Client, IAgentRuntime, Memory, Plugin } from "@elizaos/core";
+import { Client, IAgentRuntime, Memory, Plugin, UUID } from "@elizaos/core";
 import { DiscordClient } from "@elizaos/client-discord";
-import { PriceMonitorAction } from "@elizaos/plugin-solana-trading/src/actions/priceMonitor";
-import { CandleAnalysisAction } from "@elizaos/plugin-solana-trading/src/actions/candleAnalysis";
-import { BottomDetectionAction } from "@elizaos/plugin-solana-trading/src/actions/bottomDetection";
-import { TradingSignalEvaluator } from "@elizaos/plugin-solana-trading/src/evaluators/tradingSignal";
-import { GeckoTerminalProvider } from "@elizaos/plugin-solana-trading/src/providers/geckoTerminal";
+import { 
+  PriceMonitorAction,
+  CandleAnalysisAction,
+  BottomDetectionAction,
+  TradingSignalEvaluator,
+  GeckoTerminalProvider
+} from "@elizaos/plugin-solana-trading";
+import { stringToUuid } from "@elizaos/core";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -34,10 +37,9 @@ export class SolanaTradingClient implements Client {
     };
   }
 
-  async start(runtime: IAgentRuntime) {
+  start = async (runtime: IAgentRuntime): Promise<unknown> => {
     // Initialize Discord client
     this.discordClient = new DiscordClient(runtime);
-    await this.discordClient.start(runtime);
 
     // Register plugin's actions
     this.plugin.actions?.forEach(action => runtime.registerAction(action));
@@ -54,7 +56,8 @@ export class SolanaTradingClient implements Client {
     this.startPriceMonitoring(runtime);
     
     console.log("Solana Trading Bot initialized and monitoring prices...");
-  }
+    return this;
+  };
 
   private startPriceMonitoring(runtime: IAgentRuntime) {
     // Run price analysis every minute
@@ -62,10 +65,11 @@ export class SolanaTradingClient implements Client {
       try {
         // Create memory object for analysis
         const message: Memory = {
-          id: undefined,
+          id: stringToUuid(runtime.agentId),
           userId: runtime.agentId,
           agentId: runtime.agentId,
           roomId: runtime.agentId,
+          createdAt: Date.now(),
           content: {
             text: "Analyze trading signals",
             action: "analyze"
@@ -85,7 +89,7 @@ export class SolanaTradingClient implements Client {
     }, 60 * 1000); // Every minute
   }
 
-  async stop(runtime: IAgentRuntime) {
+  stop = async (runtime: IAgentRuntime): Promise<unknown> => {
     if (this.analysisInterval) {
       clearInterval(this.analysisInterval);
       this.analysisInterval = null;
@@ -95,7 +99,8 @@ export class SolanaTradingClient implements Client {
     await this.discordClient.stop();
 
     console.log("Shutting down Solana Trading Bot...");
-  }
+    return this;
+  };
 }
 
 // Export the client class instead of an instance
